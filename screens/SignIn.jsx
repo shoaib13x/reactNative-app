@@ -12,6 +12,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import '@react-native-firebase/app';
+import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
 import {useNavigation} from '@react-navigation/native';
 
 export default function Example({navigation}) {
@@ -30,7 +31,7 @@ export default function Example({navigation}) {
 
   async function onGoogleButtonPress() {
     try {
-       await GoogleSignin.signOut();
+      await GoogleSignin.signOut();
       // Check if your device supports Google Play
       await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
       // Get the users ID token
@@ -39,29 +40,62 @@ export default function Example({navigation}) {
       console.log('User:', user);
       Alert.alert('Success');
 
-
       // Create a Google credential with the token
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
       // Sign-in the user with the credential
       await auth().signInWithCredential(googleCredential);
       //navigation.push('Home')
-      navigation.navigate('Home')
+      navigation.navigate('Home');
     } catch (error) {
       console.log(error);
       let e = JSON.stringify(error);
       Alert.alert(e);
     }
   }
+  async function onFacebookButtonPress() {
+    try {
+      // Attempt login with permissions
+      const result = await LoginManager.logInWithPermissions([
+        'public_profile',
+        'email',
+      ]);
+
+      if (result.isCancelled) {
+        throw 'User cancelled the login process';
+      }
+
+      // Once signed in, get the user's AccessToken
+      const data = await AccessToken.getCurrentAccessToken();
+
+      if (!data) {
+        throw 'Something went wrong obtaining access token';
+      }
+
+      // Create a Firebase credential with the AccessToken
+      const facebookCredential = auth.FacebookAuthProvider.credential(
+        data.accessToken,
+      );
+
+      // Sign-in the user with the credential
+      const userData = await auth().signInWithCredential(facebookCredential);
+      console.log('User Data: ', userData);
+      Alert.alert('Success');
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Error during Facebook login', error);
+    }
+  }
 
   const loginWithEmailAndPass = () => {
-    auth().signInWithEmailAndPassword(form.email , form.password)
-    .then((res)=>{
-      Alert.alert("Success")
-      navigation.navigate('Home')
-    })
-    .catch((error)=>console.log(error))
-  }
+    auth()
+      .signInWithEmailAndPassword(form.email, form.password)
+      .then(res => {
+        Alert.alert('Success');
+        navigation.navigate('Home');
+      })
+      .catch(error => console.log(error));
+  };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#e8ecf4'}}>
@@ -101,8 +135,7 @@ export default function Example({navigation}) {
           </View>
 
           <View style={styles.formAction}>
-            <TouchableOpacity
-              onPress={loginWithEmailAndPass}>
+            <TouchableOpacity onPress={loginWithEmailAndPass}>
               <View style={styles.btn}>
                 <Text style={styles.btnText}>Sign in</Text>
               </View>
@@ -121,7 +154,7 @@ export default function Example({navigation}) {
           </View>
 
           <View style={styles.formAction}>
-            <TouchableOpacity onPress={()=>{}}>
+            <TouchableOpacity onPress={onFacebookButtonPress}>
               <View style={styles.facebookbtn}>
                 <Text style={styles.googleBtnText}>Login with Facebook</Text>
               </View>
