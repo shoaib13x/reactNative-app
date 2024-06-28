@@ -15,7 +15,7 @@ import '@react-native-firebase/app';
 import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
 import {useNavigation} from '@react-navigation/native';
 
-export default function Example({navigation}) {
+export default function SignIn({navigation}) {
   // const navigation = useNavigation();
   const [form, setForm] = useState({
     email: '',
@@ -46,7 +46,8 @@ export default function Example({navigation}) {
       // Sign-in the user with the credential
       await auth().signInWithCredential(googleCredential);
       //navigation.push('Home')
-      navigation.navigate('Home');
+      //navigation.navigate('Home');
+      navigation.navigate('Subscription');
     } catch (error) {
       console.log(error);
       let e = JSON.stringify(error);
@@ -157,6 +158,14 @@ export default function Example({navigation}) {
             <TouchableOpacity onPress={onFacebookButtonPress}>
               <View style={styles.facebookbtn}>
                 <Text style={styles.googleBtnText}>Login with Facebook</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formAction}>
+            <TouchableOpacity onPress={() => {}}>
+              <View style={styles.facebookbtn}>
+                <Text style={styles.googleBtnText}>Login with Apple</Text>
               </View>
             </TouchableOpacity>
           </View>
